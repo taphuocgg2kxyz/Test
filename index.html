@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>DNS Request Load Test</title>
+</head>
+<body>
+  <button id="start">Start</button>
+  <button id="stop">Stop</button>
+  <pre id="log"></pre>
+
+  <script>
+    const target = "https://nap5k.com/";
+    let running = false;
+    let count = 0;
+
+    async function sendRequest() {
+      while (running) {
+        try {
+          await fetch(target + "?test=" + Date.now() + "-" + count, {
+            cache: "no-store",
+            mode: "no-cors"
+          });
+
+          count++;
+          document.querySelector("#log").textContent =
+            `Requests sent: ${count}`;
+        } catch (e) {
+          document.querySelector("#log").textContent =
+            `Requests sent: ${count}\nError: ${e.message}`;
+        }
+
+        // Giới hạn tốc độ để tránh tạo flood ngoài ý muốn.
+        await new Promise(r => setTimeout(r, 100));
+      }
+    }
+
+    document.querySelector("#start").onclick = () => {
+      if (!running) {
+        running = true;
+        sendRequest();
+      }
+    };
+
+    document.querySelector("#stop").onclick = () => {
+      running = false;
+    };
+  </script>
+</body>
+</html>
